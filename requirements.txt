@@ -1,5 +1,5 @@
 #utilities
-umpy
+numpy
 pandas
 
 #face recognition 
@@ -17,3 +17,6 @@ segno
 pillow
 
 streamlit
+
+librosa
+resemblyzer
