@@ -42,3 +42,11 @@ def create_student(new_name,face_embedding=None,voice_embedding=None):
     }
     response= supabase.table("students").insert(data).execute()
     return response.data
+
+def create_subject(subject_code,name,section,teacher_id):
+    data={"subject_code":subject_code,"name": name,"section": section,"teacher_id":teacher_id};
+    response=supabase.table("subjects").insert(data).execute()
+    return response.data
+
+def get_teacher_subjects(teacher_id):
+    response=supabase.table("subjects").select("*,subject_students(count),attendance_logs(timestamp)").eq

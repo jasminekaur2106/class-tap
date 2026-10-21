@@ -4,15 +4,17 @@ from src.screens.ui.base_layout import style_background_dashboard, style_base_la
 from src.screens.components.header import header_dashboard
 from src.screens.database.db import check_teacher_exists, create_teacher, teacher_login
 
-def teacher_screen():
     style_background_dashboard()
     style_base_layout()
 
-    
-    if "teacher_login_type" not in st.session_state or st.session_state.teacher_login_type=="login":
-        teacher_screen_login()
-    elif st.session_state.teacher_login_type=="register":
+    if st.session_state.get("is_logged_in", False):
+        teacher_dashboard()
+
+    elif st.session_state.get("teacher_login_type", "login") == "register":
         teacher_screen_register()
+
+    else:
+        teacher_screen_login()
 
 def teacher_dashboard():
     teacher_data = st.session_state.teacher_data
@@ -30,26 +32,54 @@ def teacher_dashboard():
 
     st.space()
     if "current_teacher_tab" not in st.session_state:
-        st.session_state.current_teacher_tab = "Take Attendance"
+        st.session_state.current_teacher_tab = "take_attendance"
     tab1, tab2 ,tab3 = st.columns(3)
 
     with tab1:
-        
-        if st.button("Take Attendance",width="stretch", icon=":material/ar_on_you:"):
+        type1= "primary" if st.session_state.current_teacher_tab == "take_attendance" else "tertiary"
+        if st.button("Take Attendance",type=type1,width="stretch", icon=":material/assignment_turned_in:"):
             st.session_state.current_teacher_tab = "take_attendance"
             st.rerun()
 
     with tab2:
-            if st.button("Manage Subjects",width="stretch", icon=":book_ribbon:"):
-                st.session_state.current_teacher_tab = "manage_attendance"
+            type2= "primary" if st.session_state.current_teacher_tab == "manage_subjects" else "tertiary"
+            if st.button("Manage Subjects",type=type2,width="stretch", icon=":material/menu_book:"):
+                st.session_state.current_teacher_tab = "manage_subjects"
                 st.rerun()
 
     with tab3:
-            if st.button("Attendance Records",width="stretch", icon=":material/cards_stack:"):
+            type3= "primary" if st.session_state.current_teacher_tab == "attendance_records" else "tertiary"
+            if st.button("Attendance Records",type=type3,width="stretch", icon=":material/overview:"):
                 st.session_state.current_teacher_tab = "attendance_records"
                 st.rerun()
-    
 
+    st.divider()
+
+    if st.session_state.current_teacher_tab=="take_attendance":
+        teacher_tab_take_attendance()
+
+    if st.session_state.current_teacher_tab=="manage_subjects":
+        teacher_tab_manage_subjects()
+
+    if st.session_state.current_teacher_tab=="attendance_records":
+        teacher_tab_attendance_records()
+
+
+def teacher_tab_take_attendance():
+    st.header("Take AI attendance")
+
+def teacher_tab_manage_subjects():
+    teacher_id=st.session_state.teacher_data["teacher_id"]
+    col1,col2=st.columns(2)
+    with col1:
+        st.header("Manage Subjects",width="stretch")
+    with col2:
+        if st.button("Create New Subject",width="Content"):
+            create_subject_dialog(teacher_id)
+    st.header("Manage Subjects")
+
+def teacher_tab_attendance_records():
+    st.header("Attendance Records")
 
 def login_teacher(teacher_username, teacher_pass):
     if not teacher_username or not teacher_pass:
@@ -99,10 +129,9 @@ def teacher_screen_login():
 
     with btnc1:
         if st.button("Login", icon=":material/passkey:" ,shortcut="control+enter",width="stretch"):
-            if teacher_login(teacher_username, teacher_pass):
+            if login_teacher(teacher_username, teacher_pass):
                 st.toast("Login successful!", icon="✅")
-                import time
-                time.sleep(1)
+                
                 st.rerun()
             else:
                 st.error("Invalid username or password. Please try again.", icon="❌")
